@@ -1,0 +1,27 @@
+---
+- name: command shell 
+  hosts: ansible_client
+  become: true
+  gather_facts: true
+
+  vars:
+    mysql_root_password: xxxxxxxxxxxxx
+
+  tasks:
+    - name: Start the mysql service
+      shell: systemctl status mysql | grep start
+      register: command_output
+
+    - debug: 
+        msg: "{{command_output.stdout}}"
+
+    - name: add sample data to database  
+      copy: src=table.sql dest=/tmp/table.sql  
+
+    - name: create new database
+      mysql_db:
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+        name: ansible
+        target: /tmp/table.sql
+        state: import 
